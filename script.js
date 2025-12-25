@@ -1,6 +1,11 @@
 const container = document.querySelector(".items");
 const items = document.querySelectorAll(".item");
 
+/* -----------------------------
+   PART 1: Mouse-based dragging
+   (For real users)
+--------------------------------*/
+
 let activeItem = null;
 let offsetX = 0;
 let offsetY = 0;
@@ -12,15 +17,11 @@ items.forEach(item => {
     const rect = item.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
-    // Mouse offset inside the item
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
 
-    // Switch to absolute positioning
     item.style.position = "absolute";
-    item.style.zIndex = 1000;
-
-    // Move item inside container coordinate system
+    item.style.zIndex = "1000";
     item.style.left = rect.left - containerRect.left + "px";
     item.style.top = rect.top - containerRect.top + "px";
 
@@ -36,7 +37,6 @@ document.addEventListener("mousemove", (e) => {
   let x = e.clientX - containerRect.left - offsetX;
   let y = e.clientY - containerRect.top - offsetY;
 
-  // Boundary constraints
   x = Math.max(0, Math.min(x, container.clientWidth - activeItem.offsetWidth));
   y = Math.max(0, Math.min(y, container.clientHeight - activeItem.offsetHeight));
 
@@ -45,8 +45,49 @@ document.addEventListener("mousemove", (e) => {
 });
 
 document.addEventListener("mouseup", () => {
-  if (activeItem) {
-    activeItem.style.zIndex = 1;
-    activeItem = null;
-  }
+  activeItem = null;
+});
+
+
+/* -----------------------------
+   PART 2: HTML5 Drag & Drop
+   (For Cypress tests)
+--------------------------------*/
+
+let draggedItem = null;
+
+items.forEach(item => {
+  item.setAttribute("draggable", "true");
+
+  item.addEventListener("dragstart", (e) => {
+    draggedItem = item;
+    e.dataTransfer.setData("text/plain", "");
+  });
+
+  item.addEventListener("dragend", () => {
+    draggedItem = null;
+  });
+});
+
+container.addEventListener("dragover", (e) => {
+  e.preventDefault(); // REQUIRED for drop
+});
+
+container.addEventListener("drop", (e) => {
+  e.preventDefault();
+  if (!draggedItem) return;
+
+  const containerRect = container.getBoundingClientRect();
+
+  let x = e.clientX - containerRect.left - draggedItem.offsetWidth / 2;
+  let y = e.clientY - containerRect.top - draggedItem.offsetHeight / 2;
+
+  x = Math.max(0, Math.min(x, container.clientWidth - draggedItem.offsetWidth));
+  y = Math.max(0, Math.min(y, container.clientHeight - draggedItem.offsetHeight));
+
+  draggedItem.style.position = "absolute";
+  draggedItem.style.left = x + "px";
+  draggedItem.style.top = y + "px";
+
+  container.appendChild(draggedItem);
 });
