@@ -59,14 +59,19 @@ let draggedItem = null;
 items.forEach(item => {
   item.setAttribute("draggable", "true");
 
-  item.addEventListener("dragstart", (e) => {
-    draggedItem = item;
-    e.dataTransfer.setData("text/plain", "");
-  });
+item.addEventListener("dragstart", (e) => {
+  draggedItem = item;
+  item.classList.add("dragging");   // ✅ Cypress can see this
+  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.setData("text/plain", "");
+});
 
-  item.addEventListener("dragend", () => {
-    draggedItem = null;
-  });
+
+item.addEventListener("dragend", () => {
+  item.classList.remove("dragging");
+  draggedItem = null;
+});
+
 });
 
 container.addEventListener("dragover", (e) => {
