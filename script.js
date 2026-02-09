@@ -72,22 +72,19 @@ items.forEach(item => {
 container.addEventListener("dragover", (e) => {
   e.preventDefault(); // REQUIRED for drop
 });
-
 container.addEventListener("drop", (e) => {
   e.preventDefault();
   if (!draggedItem) return;
 
-  const containerRect = container.getBoundingClientRect();
+  const target = e.target.closest(".item");
 
-  let x = e.clientX - containerRect.left - draggedItem.offsetWidth / 2;
-  let y = e.clientY - containerRect.top - draggedItem.offsetHeight / 2;
+  if (target && target !== draggedItem) {
+    container.insertBefore(draggedItem, target);
+  }
 
-  x = Math.max(0, Math.min(x, container.clientWidth - draggedItem.offsetWidth));
-  y = Math.max(0, Math.min(y, container.clientHeight - draggedItem.offsetHeight));
-
-  draggedItem.style.position = "absolute";
-  draggedItem.style.left = x + "px";
-  draggedItem.style.top = y + "px";
-
-  container.appendChild(draggedItem);
+  draggedItem.classList.remove("dragging");
+  draggedItem = null;
 });
+
+
+
